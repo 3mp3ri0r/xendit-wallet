@@ -21,8 +21,14 @@ const Checkout: NextPage = () => {
   const [expiryMonth, setExpiryMonth] = useState('12');
   const [expiryYear, setExpiryYear] = useState('2024');
   const [cardCVN, setCardCVN] = useState('123');
-  const [cardToken, setCardToken] = useState();
+  const [cardToken, setCardToken] = useState('');
   const [tokenStatus, setTokenStatus] = useState("Awaiting transaction");
+
+  useEffect(() => {
+    if (tokenStatus === 'Verified' && !cardToken.startsWith('https')) {
+      console.log('processing the payment...')
+    }
+  }, [cardToken, tokenStatus])
 
   const handleVerification = (type: InputType, value: string, value2 = "") => {
     if (type === InputType.CARD_NUMBER) {
@@ -57,10 +63,6 @@ const Checkout: NextPage = () => {
       const authenticationUrl = creditCardCharge.payer_authentication_url;
       setCardToken(authenticationUrl);
       setTokenStatus("In Review");
-      window.open(
-        creditCardCharge.payer_authentication_url,
-        "sample-inline-frame"
-      );
     } else if (creditCardCharge.status === "FAILED") {
       console.log("failed triggered");
       setCardToken(creditCardCharge.failure_reason);
@@ -130,6 +132,7 @@ const Checkout: NextPage = () => {
         </div>
         <button onClick={paymentHandler}>Pay With Credit Card!</button>
       </article>
+      {tokenStatus === 'In Review' && cardToken ? <iframe src={cardToken} /> : <p>{cardToken}</p>}
     </div>
   )
 }
